@@ -1,0 +1,14 @@
+Olá, Carlos e João
+
+Este projeto, em sua conclusão, precisa ter:
+1. Tela de Cadastro de Novo Usuário
+    Cada novo usuário precisa ser acrescentado no csv "user_db"
+2. Tela de Login de Usuário
+    Para logar, as informações precisam bater com aquelas inseridas no csv "user_db"
+3. Tela de Venda de Itens da Loja (com 3 itens)
+4. Tela de Compra de Item da Loja
+    Após finalizar a compra, a quantidade do item disponível deve ser subtraída
+
+Este projeto utiliza a biblioteca Pandas. Para fazer sua instalação, abra um console Python no próprio VS Code
+e execute o seguinte comando:
+                                pip install pandas
