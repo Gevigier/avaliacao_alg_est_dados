@@ -12,21 +12,21 @@ class acesso_db:
     def cadastrarUser(new_user_entry):
         if acesso_db.existencia_db(): 
             new_user_entry.to_csv('./user_db.csv', mode='a', index=False, header=False, sep=';')
-            return True
         else:
             new_user_entry.to_csv('./user_db.csv', mode='a', index=False, header=True, sep=';')
-            return False
+
+        return True
 
     def validarLogin(self, email_login, senha_login):
 
         if acesso_db.existencia_db(): 
             user_db = pd.read_csv('./user_db.csv', sep = ';')
-  
+
             for email in user_db.loc[:,"E-mail"]:
                 if email == email_login:
                     index = int(''.join(filter(str.isdigit, str(user_db.index[user_db['E-mail']==email_login].tolist()))))
-                    senha_db = user_db.at[index,"Senha"]
-                    if senha_login == senha_db:
+                    senha_db = str(user_db.at[index,"Senha"])
+                    if str(senha_login) == senha_db:
                         self.nomeUserLogin = user_db.at[index,"Nome"]
                         return 2 #Autenficado com sucesso
                     else:
@@ -175,12 +175,6 @@ class sistemaLoja:
                 
                 ''')
                 sistemaLoja.telaInicial(self) 
-            else:
-                print('''
-                   -x- Erro ao Cadastrar -x-
-                  Retornando a tela inicial...
-                ''')
-                sistemaLoja.telaInicial(self) 
         else:
             print('''
                    -x- Operação Cancelada -x-
@@ -191,15 +185,9 @@ class sistemaLoja:
     def processoLogin(self, emailUserLogin, senhaUser):
         if self.telaConfirmacao() == 1:
                 match acesso_db.validarLogin(self, emailUserLogin, senhaUser):
-                    case 0: #E-mail não encontrado
+                    case (0) | (1): #0 = E-mail não encontrado | 1 = Senha incorreta
                         print('''
----> Este e-mail não está cadastrado
-        Por favor, tente novamente''')
-                        sistemaLoja.telaLogin(self)
-
-                    case 1: #Senha incorreta
-                        print('''
----> Senha incorreta
+---> O e-mail ou senha inserido não está correto.
         Por favor, tente novamente''')
                         sistemaLoja.telaLogin(self)
 
@@ -226,11 +214,6 @@ class sistemaLoja:
         senhaLogin   = str(input('INSIRA SUA SENHA: ')) 
 
         sistemaLoja.processoLogin(self, emailLogin, senhaLogin)
-
-
-        
-
-
 
 
 
