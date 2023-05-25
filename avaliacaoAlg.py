@@ -45,6 +45,28 @@ class acesso_db:
                     return False #Este e-mail já está cadastrado
         return True #Este e-email não está cadastrado
 
+class acesso_db_produto:
+    def existencia_db_loja():
+        if (os.path.isfile('./product_db.csv')) is True:
+            return True
+        else:
+            return False
+
+    def visualizarProduto(self, arg):
+        if acesso_db_produto.existencia_db_loja(): 
+            self.product_db = pd.read_csv('./product_db.csv', sep = ';')
+            # new_user_entry.to_csv('./user_db.csv', mode='a', index=False, header=False, sep=';')
+        else:
+            # new_user_entry.to_csv('./user_db.csv', mode'a', index=False, header=True, sep=';')
+
+        match arg:
+            case 0:
+                return 'Café Preto'
+            case 1:
+                return 'Café Expresso'
+            case 2:
+                return 'Energético'
+
 class validacao_info:
     def validacaoEmail(tipo):
         while True:
@@ -125,6 +147,8 @@ class sistemaLoja:
                         sistemaLoja.telaLogin(self)
                     case 2:
                         sistemaLoja.telaCadastro(self)
+                    case _:
+                        raise
                 
                 break
             except:
@@ -133,20 +157,20 @@ class sistemaLoja:
         if saida == True:
             exit()
 
-    def telaConfirmacao(self):
+    def telaConfirmacao():
         # Tela de confirmação para ser usada e reciclada por todo o código
         while True:
             opcoes = int(input('''
-            [1] Confirmar                    [2] Cancelar
+            [1] Confirmar                    [0] Cancelar
                         '''))
 
             match opcoes:
                 case 1:
-                    return 1
-                case 2:
-                    return 0
+                    return 1 #SIM
+                case 0:
+                    return 0 #NÃO
                 case _:
-                    print('Opção incorreta. Insira um número referente a uma das opções disponíveis. (func separada)') 
+                    print('Opção incorreta. Insira um número referente a uma das opções disponíveis. (func)') 
 
     def telaCadastro(self):
 
@@ -168,7 +192,7 @@ class sistemaLoja:
         'Nascimento': [nascUser],
         'CPF': [cpfUser]})
         
-        if self.telaConfirmacao() == 1:
+        if sistemaLoja.telaConfirmacao() == 1:
             if acesso_db.cadastrarUser(new_user):
                 print('''
 ---> Cadastro realizado com sucesso.
@@ -182,9 +206,17 @@ class sistemaLoja:
                 ''')
             sistemaLoja.telaInicial(self)
  
-    def processoLogin(self, emailUserLogin, senhaUser):
-        if self.telaConfirmacao() == 1:
-                match acesso_db.validarLogin(self, emailUserLogin, senhaUser):
+    def telaLogin(self):
+        # Tela de Login
+        print('''
+        -------------- ENTRADA DE USUÁRIO -------------
+        ''')
+
+        emailLogin   = validacao_info.validacaoEmail(2)
+        senhaLogin   = str(input('INSIRA SUA SENHA: ')) 
+
+        if sistemaLoja.telaConfirmacao() == 1:
+                match acesso_db.validarLogin(self, emailLogin, senhaLogin):
                     case (0) | (1): #0 = E-mail não encontrado | 1 = Senha incorreta
                         print('''
 ---> O e-mail ou senha inserido não está correto.
@@ -197,6 +229,8 @@ class sistemaLoja:
 
                 Seja bem-vindo, ''', self.nomeUserLogin,'''!
                 ''')
+                        
+                        sistemaLoja.telaVenda(self)
         else:
             print('''
                    -x- Operação Cancelada -x-
@@ -204,19 +238,66 @@ class sistemaLoja:
                 ''')
             sistemaLoja.telaInicial(self)
 
-    def telaLogin(self):
-        # Tela de Login
+    def telaVenda(self):
         print('''
-        -------------- ENTRADA DE USUÁRIO -------------
+        ===x===x===x===x===x===x===x===x===x===x===x===
+              A LOJA DO PROGRAMADOR - ANHANGUERA
+        ===x===x===x===x===x===x===x===x===x===x===x===
+        
+|----------------      |----------------      |----------------   
+|               |      |               |      |               |
+|               |      |               |      |               |
+|  {0}   |      | {1} |      |   {2}  |
+|               |      |               |      |               |
+|               |      |               |      |               |
+----------------|      ----------------|      ----------------|
+
+
+    Escolha uma opção:
+  [1] Comprar "{0}"        [2] Comprar "{1}"
+  [3] Comprar "{2}"        [0] Sair
+  '''.format(acesso_db_produto.visualizarProduto(self, 0), acesso_db_produto.visualizarProduto(self, 1), acesso_db_produto.visualizarProduto(self, 2)))
+        
+        cancelar = False
+
+        while True:
+            try:
+                respVenda = int(input())
+                match respVenda:
+                    case 0: #Sair
+                        print('''
+        Ao prosseguir, você será desconectado de sua conta e redirecionado a tela inicial
         ''')
+                        if sistemaLoja.telaConfirmacao() == 1:
+                            cancelar = True
+                        else:
+                            print('''
+        Perfeito! Adoramos sua presença aqui :)
+        ''')
+                            sistemaLoja.telaVenda(self)
+                    case 1: #Comprar café preto
+                        print('comprado café preto')
+                    case 2: #Comprar café expresso
+                        print('comprado café expresso')
+                    case 3: #Comprar Energético
+                        print('comprado energético')
+                    case _:
+                        raise
+                
+                break
+            except:
+                print('Opção incorreta. Insira um número referente a uma das opções disponíveis.')
 
-        emailLogin   = validacao_info.validacaoEmail(2)
-        senhaLogin   = str(input('INSIRA SUA SENHA: ')) 
+        if cancelar == True:
+            sistemaLoja()
 
-        sistemaLoja.processoLogin(self, emailLogin, senhaLogin)
+
+
+
 
 
 
 if __name__ == "__main__":
     # Este IF serve para que o código seja executado
     sistema = sistemaLoja()
+    # sistemaLoja.telaVenda()
