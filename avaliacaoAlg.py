@@ -62,8 +62,14 @@ class acesso_db_produto:
 
         return(product_db)
 
-    def visualizarValor():
-        print('aaaa')
+    def visualizarValor(self, ver_valor):
+        match ver_valor:
+            case 0:
+                return '15,00'
+            case 1:
+                return '12,00'
+            case 2:
+                return '20,00'
 
     def visualizarProduto(self, ver_produto):
 
@@ -157,6 +163,7 @@ class sistemaLoja:
                 resp = int(input())
                 match resp:
                     case 0:
+                        self.detBreak = True #Usado para finalizar loop infinito
                         break
                     case 1:
                         sistemaLoja.telaLogin(self)
@@ -168,6 +175,7 @@ class sistemaLoja:
                 break
             except:
                 print('Opção incorreta. Insira um número referente a uma das opções disponíveis.')
+
 
 
     def telaConfirmacao():
@@ -217,7 +225,6 @@ class sistemaLoja:
                    -x- Operação Cancelada -x-
                   Retornando a tela inicial...
                 ''')
-            # self.retorno = True
             sistemaLoja.telaInicial(self)
  
     def telaLogin(self):
@@ -262,18 +269,24 @@ class sistemaLoja:
 |----------------      |----------------      |----------------   
 |               |      |               |      |               |
 |               |      |               |      |               |
-|  {0}   |      | {1} |      |   {2}  |
+|  {0}   |      | {2} |      |   {4}  |
 |               |      |               |      |               |
 |               |      |               |      |               |
 ----------------|      ----------------|      ----------------|
+R$ {1}               R$ {3}               R$ {5}
 
 
     Escolha uma opção:
-  [1] Comprar "{0}"        [2] Comprar "{1}"
-  [3] Comprar "{2}"        [0] Sair
-  '''.format(acesso_db_produto.visualizarProduto(self, 0), acesso_db_produto.visualizarProduto(self, 1), acesso_db_produto.visualizarProduto(self, 2)))
+  [1] Comprar "{0}"        [2] Comprar "{2}"
+  [3] Comprar "{4}"        [0] Sair
+  '''.format(acesso_db_produto.visualizarProduto(self, 0), #0
+             acesso_db_produto.visualizarValor(self, 0),   #1
+             acesso_db_produto.visualizarProduto(self, 1), #2
+             acesso_db_produto.visualizarValor(self, 1),   #3
+             acesso_db_produto.visualizarProduto(self, 2), #4
+             acesso_db_produto.visualizarValor(self, 2)    #5
+             ))
         
-        cancelar = False
 
         while True:
             try:
@@ -281,30 +294,36 @@ class sistemaLoja:
                 match respVenda:
                     case 0: #Sair
                         print('''
-        Ao prosseguir, você será desconectado de sua conta e redirecionado a tela inicial
+    Ao prosseguir, você será desconectado de sua conta e redirecionado a tela inicial
         ''')
                         if sistemaLoja.telaConfirmacao() == 1:
-                            cancelar = True
+                            sistemaLoja.telaInicial(self)
+
+                            if self.detBreak: #Previne loop infinito
+                                break
                         else:
                             print('''
         Perfeito! Adoramos sua presença aqui :)
+        
         ''')
+                            
                             sistemaLoja.telaVenda(self)
                     case 1: #Comprar café preto
                         print('comprado café preto')
+                        break
                     case 2: #Comprar café expresso
                         print('comprado café expresso')
+                        break
                     case 3: #Comprar Energético
                         print('comprado energético')
+                        break
                     case _:
                         raise
                 
-                break
             except:
                 print('Opção incorreta. Insira um número referente a uma das opções disponíveis.')
 
-        if cancelar == True:
-            sistemaLoja()
+
 
 
 
@@ -313,4 +332,3 @@ class sistemaLoja:
 if __name__ == "__main__":
     # Este IF serve para que o código seja executado
     sistema = sistemaLoja()
-    # sistemaLoja.telaVenda()
