@@ -151,7 +151,6 @@ class sistemaLoja:
         [1] Entrar                       [2] Cadastre-se
                                          [0] Encerrar''')
         
-        saida = False
 
         while True:
             try:
@@ -170,8 +169,6 @@ class sistemaLoja:
             except:
                 print('Opção incorreta. Insira um número referente a uma das opções disponíveis.')
 
-        if saida == True:
-            exit()
 
     def telaConfirmacao():
         # Tela de confirmação para ser usada e reciclada por todo o código
