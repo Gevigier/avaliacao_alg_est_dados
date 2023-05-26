@@ -52,20 +52,36 @@ class acesso_db_produto:
         else:
             return False
 
-    def visualizarProduto(self, arg):
+    def acessar_db(self):
         if acesso_db_produto.existencia_db_loja(): 
-            self.product_db = pd.read_csv('./product_db.csv', sep = ';')
-            # new_user_entry.to_csv('./user_db.csv', mode='a', index=False, header=False, sep=';')
+            product_db = pd.read_csv('./product_db.csv', sep = ';')
         else:
-            # new_user_entry.to_csv('./user_db.csv', mode'a', index=False, header=True, sep=';')
+            product_db = pd.DataFrame({'Produto':['Café Preto', 'Café Expresso', 'Energético'],
+            'Valor':['2,00', '5,00', '8,00'],
+            'Quantidade': ['27', '53', '42']})
 
-        match arg:
+        return(product_db)
+
+    def visualizarValor():
+        print('aaaa')
+
+    def visualizarProduto(self, ver_produto):
+
+        db_produto = acesso_db_produto.acessar_db(self)
+
+        todos_produto = ''
+        for produto in db_produto.loc[:,"Produto"]:
+            todos_produto = todos_produto + produto + ";"
+        
+        lista_produto = todos_produto.split(';')
+
+        match ver_produto:
             case 0:
-                return 'Café Preto'
+                return lista_produto[0]
             case 1:
-                return 'Café Expresso'
+                return lista_produto[1]
             case 2:
-                return 'Energético'
+                return lista_produto[2]
 
 class validacao_info:
     def validacaoEmail(tipo):
@@ -142,12 +158,12 @@ class sistemaLoja:
                 resp = int(input())
                 match resp:
                     case 0:
-                        saida = True
+                        break
                     case 1:
                         sistemaLoja.telaLogin(self)
                     case 2:
                         sistemaLoja.telaCadastro(self)
-                    case _:
+                    case _:                      
                         raise
                 
                 break
@@ -170,7 +186,7 @@ class sistemaLoja:
                 case 0:
                     return 0 #NÃO
                 case _:
-                    print('Opção incorreta. Insira um número referente a uma das opções disponíveis. (func)') 
+                    print('Opção incorreta. Insira um número referente a uma das opções disponíveis.') 
 
     def telaCadastro(self):
 
@@ -204,6 +220,7 @@ class sistemaLoja:
                    -x- Operação Cancelada -x-
                   Retornando a tela inicial...
                 ''')
+            # self.retorno = True
             sistemaLoja.telaInicial(self)
  
     def telaLogin(self):
@@ -239,6 +256,7 @@ class sistemaLoja:
             sistemaLoja.telaInicial(self)
 
     def telaVenda(self):
+
         print('''
         ===x===x===x===x===x===x===x===x===x===x===x===
               A LOJA DO PROGRAMADOR - ANHANGUERA
@@ -290,8 +308,6 @@ class sistemaLoja:
 
         if cancelar == True:
             sistemaLoja()
-
-
 
 
 
