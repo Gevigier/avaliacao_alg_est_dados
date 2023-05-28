@@ -402,7 +402,7 @@ class sistemaLoja:
 |----------------      |----------------      |----------------   
 |               |      |               |      |               |
 |               |      |               |      |               |
-|  {0}   |      | {2} |      |   {4}  |
+|    {0}   |      |    {2}    |      |    {4}    |
 |               |      |               |      |               |
 |               |      |               |      |               |
 ----------------|      ----------------|      ----------------|
@@ -410,7 +410,7 @@ R$ {1}                R$ {3}                 R$ {5}
 
 
     Escolha uma opção:
-  [1] Comprar "{0}"        [2] Comprar "{2}"
+  [1] Comprar "{0}"       [2] Comprar "{2}"
   [3] Comprar "{4}"        [0] Sair
   '''.format(acesso_db_produto.visualizarProduto(self, 0), #0
              acesso_db_produto.visualizarValor(self, 0),   #1
