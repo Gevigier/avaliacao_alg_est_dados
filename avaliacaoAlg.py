@@ -1,10 +1,11 @@
-import pandas as pd #Lidar com .csv
-import os #Verificar a existência dos .csv
-import re #Regex -> validar e-mail
-import time #Usado para segurar o código por alguns segundos
-from datetime import datetime #Usado para pegar a data/hora atual
-import pytz #Usado para pegar a data/hora no horário de São Paulo
-import uuid #Gera um ID aleatório para as vendas
+import pandas as pd             #Lidar com .csv
+import os                       #Verificar a existência dos .csv
+import re                       #Regex -> validar e-mail
+import time                     #Usado para segurar o código por alguns segundos
+from datetime import datetime   #Usado para pegar a data/hora atual
+import pytz                     #Usado para pegar a data/hora no horário de São Paulo
+import uuid                     #Gera um ID aleatório para as vendas
+import string                   #Usado para validar senha
 
 class acesso_db: #Classe responsável por interagir com o .csv de "banco de dados" de usuários
     def existencia_db(): #Verifica se existe o .csv e retorna como True ou False
@@ -227,7 +228,7 @@ class validacao_info: #Classe responsável por verificar se os dados inseridos n
 
             senha = str(input('''
             DIGITE SUA SENHA 
-(REQUISITOS: mín. de : 8 caracteres / 1 maiúscula / 1 minúscula / 1 digito / 1 caractere especial): '''))
+(REQUISITOS: mín. de : 8 caracteres / 1 maiúscula / 1 minúscula / 1 número / 1 caractere especial): '''))
 
             try:
                 if (len(senha) >= 8):
@@ -242,8 +243,8 @@ class validacao_info: #Classe responsável por verificar se os dados inseridos n
                         # counting digits
                         if (i.isdigit()):
                             d+=1           
-                        # counting the mentioned special characters
-                        if(i=='@'or i=='$' or i=='_'):
+                        # counting characters
+                        if any(char in set(string.punctuation) for char in i):
                             p+=1
 
                 if (l>=1 and u>=1 and p>=1 and d>=1 and l+p+u+d==len(senha)):
