@@ -478,7 +478,7 @@ R$ {1}                R$ {3}                 R$ {5}
                             break
                         case 1:
                             acesso_db_produto.comprarProduto(self, respVenda-1) #Atualiza os bancos de dados
-                            sistemaLoja.telaAgradecimento(self) #Chama a tela de agradecimento
+                            sistemaLoja.telaAgradecimento() #Chama a tela de agradecimento
                             time.sleep(5) #Pausa o programa por 5 segundos
                             break
                         case _:
