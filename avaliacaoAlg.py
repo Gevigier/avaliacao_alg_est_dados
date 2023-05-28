@@ -6,14 +6,14 @@ from datetime import datetime #Usado para pegar a data/hora atual
 import pytz #Usado para pegar a data/hora no horário de São Paulo
 import uuid #Gera um ID aleatório para as vendas
 
-class acesso_db:
-    def existencia_db():
+class acesso_db: #Classe responsável por interagir com o .csv de "banco de dados" de usuários
+    def existencia_db(): #Verifica se existe o .csv e retorna como True ou False
         if (os.path.isfile('./user_db.csv')) is True:
             return True
         else:
             return False
 
-    def cadastrarUser(new_user_entry):
+    def cadastrarUser(new_user_entry): #Escreve o dataframe de usuário em .csv de acordo com existencia_db()
         if acesso_db.existencia_db(): 
             new_user_entry.to_csv('./user_db.csv', mode='a', index=False, header=False, sep=';')
         else:
@@ -21,26 +21,25 @@ class acesso_db:
 
         return True
 
-    def validarLogin(self, email_login, senha_login):
-
+    def validarLogin(self, email_login, senha_login): #Lê o .csv e verifica se o e-mail e senha inserido estão cadastrados
         if acesso_db.existencia_db(): 
             user_db = pd.read_csv('./user_db.csv', sep = ';')
 
-            for email in user_db.loc[:,"E-mail"]:
-                if email == email_login:
+            for email in user_db.loc[:,"E-mail"]: #Itera dentro da coluna de e-mail
+                if email == email_login: #Verifica se o e-mail inserido está cadastado
                     index = int(''.join(filter(str.isdigit, str(user_db.index[user_db['E-mail']==email_login].tolist()))))
                     senha_db = str(user_db.at[index,"Senha"])
-                    if str(senha_login) == senha_db:
+                    if str(senha_login) == senha_db: #Verifica se a senha inserida está correta
                         self.nomeUserLogin = user_db.at[index,"Nome"]
                         return 2 #Autenficado com sucesso
                     else:
                         return 1 #Senha incorreta
             return 0 #E-mail não encontrado
         
-        else:
-            return 0
+        else: 
+            return 0 #Se não existir ainda o .csv, apenas retorna como "e-mail não encontrado"
 
-    def verificarCadEmail(email_teste):
+    def verificarCadEmail(email_teste): #Verifica se o e-mail inserido não está previamente cadastrado
         if acesso_db.existencia_db(): 
             user_db = pd.read_csv('./user_db.csv', sep = ';')
   
@@ -49,54 +48,47 @@ class acesso_db:
                     return False #Este e-mail já está cadastrado
         return True #Este e-email não está cadastrado
 
-    def registrarLogin(self, email_login):
+    def registrarLogin(self, email_login): #Atualiza o .csv de cadastro inserindo a data e hora do último login
         user_db = pd.read_csv('./user_db.csv', sep = ';') #Lê a base de dados existente
         os.remove('./user_db.csv') #Apaga base de dados já existente no diretório
 
-        for email in user_db.loc[:,"E-mail"]:
+        for email in user_db.loc[:,"E-mail"]: #Itera dentro da coluna de e-mail
             index = int(''.join(filter(str.isdigit, str(user_db.index[user_db['E-mail']==email_login].tolist()))))
 
         dataLogin   = datetime.now(pytz.timezone('America/Sao_Paulo'))
-        user_db.loc[index, ['Último Login']] = dataLogin
+        user_db.loc[index, ['Último Login']] = dataLogin #Insere a data e hora atual no dataframe
 
-        user_db.to_csv('./user_db.csv', mode='a', index=False, header=True, sep=';')
+        user_db.to_csv('./user_db.csv', mode='a', index=False, header=True, sep=';') #Escreve o dataframe em .csv
 
-class acesso_db_produto:
-    def existencia_db_loja():
+class acesso_db_produto: #Classe responsável por interagir com o .csv de "banco de dados" de produtos
+    def existencia_db_loja(): #Verifica se existe o .csv e retorna como True ou False
         if (os.path.isfile('./product_db.csv')) is True:
             return True #Já existe o banco de dados
         else:
             return False #Não existe o banco de dados
 
-    def acessar_db(self):
+    def acessar_db(self): #Acessa o .csv ou cria um novo dataframe, conforme necessário
         if acesso_db_produto.existencia_db_loja(): 
             product_db = pd.read_csv('./product_db.csv', sep = ';')
         else:
+            # Cria um dataframe para ser usado de banco de dados.
+            # Sei que não é correto, mas gostaria de evitar que fosse enviado vários arquivos para o professor.
             product_db = pd.DataFrame({'Produto':['Notebook', 'Monitor', 'Teclado'],
             'Valor':['4000,00', '1200,00', '500,00'],
             'Quantidade': ['27', '53', '42']})
 
-        return(product_db)
+        return(product_db) #Retorna um dataframe (um criado ou o .csv lido)
 
-    def visualizarValor(self, ver_valor):
-        db_produto = acesso_db_produto.acessar_db(self)
-
-        for produto in db_produto.loc[:,"Produto"]:
-            index = int(''.join(filter(str.isdigit, str(db_produto.index[db_produto['Produto']==acesso_db_produto.visualizarProduto(self, ver_valor)].tolist()))))
-            valor_db = str(db_produto.at[index,"Valor"])
-
-            return(valor_db)
-
-    def visualizarProduto(self, ver_produto):
-        db_produto = acesso_db_produto.acessar_db(self)
+    def visualizarProduto(self, ver_produto): #Retira o nome do produto de acordo com o índice pedido
+        db_produto = acesso_db_produto.acessar_db(self) #Pega o "banco de dados"
 
         todos_produto = ''
-        for produto in db_produto.loc[:,"Produto"]:
-            todos_produto = todos_produto + produto + ";"
+        for produto in db_produto.loc[:,"Produto"]: #Itera dentro da coluna produtos
+            todos_produto = todos_produto + produto + ";" #Monta uma string com todos os produtos
         
-        lista_produto = todos_produto.split(';')
+        lista_produto = todos_produto.split(';') #Separa a string em uma lista
 
-        match ver_produto:
+        match ver_produto: #Envia apenas o nome do produto solicitado (de acordo com o índice da lista)
             case 0:
                 return lista_produto[0]
             case 1:
@@ -104,51 +96,56 @@ class acesso_db_produto:
             case 2:
                 return lista_produto[2]
 
-    def comprarProduto(self, produto_escolhido):
-        db_produto = acesso_db_produto.acessar_db(self)
+    def visualizarValor(self, ver_valor): #Retira o valor do produto de acordo com o produto de visualizarProduto()
+        db_produto = acesso_db_produto.acessar_db(self) #Pega o "banco de dados"
 
-        for produto in db_produto.loc[:,"Produto"]:
+        for produto in db_produto.loc[:,"Produto"]: #Itera dentro da coluna de produtos
+            index = int(''.join(filter(str.isdigit, str(db_produto.index[db_produto['Produto']==acesso_db_produto.visualizarProduto(self, ver_valor)].tolist()))))
+            valor_db = str(db_produto.at[index,"Valor"])
+
+            return(valor_db) #Retorna o valor do produto que foi pedido pela variável "ver_valor" e que teve seu nome retirado de visualizarProduto()
+
+    def comprarProduto(self, produto_escolhido): #Realiza a compra do produto
+        db_produto = acesso_db_produto.acessar_db(self) #Pega o "banco de dados"
+
+        for produto in db_produto.loc[:,"Produto"]: #Itera dentro da coluna de produtos
             index = int(''.join(filter(str.isdigit, str(db_produto.index[db_produto['Produto']==acesso_db_produto.visualizarProduto(self, produto_escolhido)].tolist()))))
-            quantidade_anterior = int(db_produto.at[index,"Quantidade"])
+            quantidade_anterior = int(db_produto.at[index,"Quantidade"]) #Salva a quantidae anterior
 
-        db_produto.loc[index, ['Quantidade']] = quantidade_anterior-1
+        db_produto.loc[index, ['Quantidade']] = quantidade_anterior-1 #Atualiza o "banco de dados" com a nova quantidade (1 a menos)
         
-        acesso_db_produto.registrarVenda(self, produto_escolhido)
+        if acesso_db_produto.existencia_db_loja():
+            os.remove('./product_db.csv') #Apaga base de dados já existente no diretório
 
-        return(db_produto)
+        db_produto.to_csv('./product_db.csv', mode='a', index=False, header=True, sep=';') #Salva o dataframe em .csv com a quantidade nova
+
+        acesso_db_produto.registrarVenda(self, produto_escolhido) #Registra a venda em outro .csv
 
     def registrarVenda(self, produto_venda):
-        self.id_venda = uuid.uuid1()
-        dataCompra    = datetime.now(pytz.timezone('America/Sao_Paulo'))
+        self.id_venda = uuid.uuid1() #Gera um ID aleatório
+        dataCompra    = datetime.now(pytz.timezone('America/Sao_Paulo')) #Pega a data e hora da compra
 
         sells_db = pd.DataFrame({'Usuário': [self.emailLogin],
         'Pedido':[acesso_db_produto.visualizarProduto(self, produto_venda)],
         'ID':[self.id_venda],
         'Data Venda': [dataCompra]})
+        #Cria um dataframe para ser transformado em .csv
 
         if (os.path.isfile('./sells_db.csv')) is True: #Já existe o banco de dados
-            sells_db.to_csv('./sells_db.csv', mode='a', index=False, header=False, sep=';') 
+            sells_db.to_csv('./sells_db.csv', mode='a', index=False, header=False, sep=';') #Escreve adicionando linhas
         else: #Não existe o banco de dados
-            sells_db.to_csv('./sells_db.csv', mode='a', index=False, header=True, sep=';') 
+            sells_db.to_csv('./sells_db.csv', mode='a', index=False, header=True, sep=';') #Escreve do zero, com cabeçalhos
 
-    def atualizarEstoque(self, novo_db_produto):
-        if acesso_db_produto.existencia_db_loja():
-            os.remove('./product_db.csv') #Apaga base de dados já existente no diretório
-
-        novo_db_produto.to_csv('./product_db.csv', mode='a', index=False, header=True, sep=';')
-
-        return True
-
-class validacao_info:
-    def validacaoNome():
+class validacao_info: #Classe responsável por verificar se os dados inseridos no momento do cadastro estão corretos
+    def validacaoNome(): #Solicita um nome e não retorna até que seja preenchido (não pode estar vazio)
         while True:
             try:
-                nome = str(input('NOME E SOBRENOME: '))
+                nome = str(input('NOME E SOBRENOME: ')) #Solicita o nome
 
-                if nome.strip():
+                if nome.strip(): #Verifica se está vazio
                     break
                 else:
-                    raise
+                    raise #Por estar vazio, chama a exception
             except:
                 print('''
         É necessário inserir seu nome. Por favor, tente novamente.
@@ -156,7 +153,7 @@ class validacao_info:
                 
         return(nome)
 
-    def validacaoEmail(tipo):
+    def validacaoEmail(tipo): #Valida se foi inserido um e-mail (cadastro e login)
         while True:
             if tipo == 1:      #CADASTRO
                 emailtestador   = str(input('INSIRA UM E-MAIL: '))
@@ -166,7 +163,7 @@ class validacao_info:
             if (not re.fullmatch(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", emailtestador)) == False:
                 if tipo == 1: #CADASTRO
                     if acesso_db.verificarCadEmail(emailtestador):
-                        break
+                        break #Este e-mail não foi cadastrado anteriormente
                     else:
                         print('''
         Houve algum problema. Tente novamente.
@@ -180,7 +177,7 @@ class validacao_info:
                 
         return(emailtestador)
 
-    def validacaoCPF():
+    def validacaoCPF(): #Solicita um CPF e verifica se é um número de CPF válido
         while True:
             cpf = input('CPF: ')
 
@@ -207,7 +204,7 @@ class validacao_info:
     
         return(cpf_numeros)
         
-    def validacaoNascimento():
+    def validacaoNascimento(): #Solicita e verifica se a data de nascimento foi inserida corretamente
         while True:
             nascimento = str(input('DATA DE NASCIMENTO (dd/mm/aaaa): '))
 
@@ -223,7 +220,7 @@ class validacao_info:
                 
         return(dataSep)
 
-    def validacaoSenha():
+    def validacaoSenha(): #Solicita uma senha e valida se possui os requisitos mínimos necessários
 
         while True:
             l, u, p, d = 0, 0, 0, 0
@@ -250,36 +247,36 @@ class validacao_info:
                             p+=1
 
                 if (l>=1 and u>=1 and p>=1 and d>=1 and l+p+u+d==len(senha)):
-                    break
+                    break #A senha cumpre os requisitos
                 else:
-                    raise
+                    raise #A senha não cumpre os requisitos
             except:
                 print('''
                 
         A senha digitada não contempla um dos requisitos mínimos. Por favor, tente novamente.
 ''')
                 
-        while True:
+        while True: #Pede para a senha ser inserida novamente
             try:
                 senha_repete = str(input('''
 DIGITE SUA SENHA NOVAMENTE: '''))
 
                 if senha == senha_repete:
-                    break
+                    break #A senha foi inserida corretamente
                 else:
-                    raise
+                    raise #A senha inserida não é igual a anterior
             except:
                 print('''
     ---> A senha inserida não confere com a digitada anteriormente. Por favor, tente novamente.''')
                 
         return(senha)
 
-class sistemaLoja:
-    def __init__(self):
+class sistemaLoja: #Classe principal que executa todo o programa com suas telas
+    def __init__(self): #Inicialização
         # Inicialização
         sistemaLoja.telaInicial(self)
 
-    def telaInicial(self):
+    def telaInicial(self): #Tela inicial
 
         # Tela inicial
         print('''
@@ -307,7 +304,7 @@ class sistemaLoja:
             except:
                 print('Opção incorreta. Insira um número referente a uma das opções disponíveis.')
 
-    def telaConfirmacao():
+    def telaConfirmacao(): #Tela de "Confirmar" e "Cancelar"
         # Tela de confirmação para ser usada e reciclada por todo o código
         while True:
             opcoes = int(input('''
@@ -322,21 +319,19 @@ class sistemaLoja:
                 case _:
                     print('Opção incorreta. Insira um número referente a uma das opções disponíveis.') 
 
-    def telaCadastro(self):
-
+    def telaCadastro(self): #Tela de cadastro
         # Tela de Cadastro
         print('''
         -------------- CADASTRO DE USUÁRIO ------------
         ''')
 
-        nomeUser = validacao_info.validacaoNome()
+        nomeUser = validacao_info.validacaoNome() #Pede e valida nome
+        emailUser = validacao_info.validacaoEmail(1) #Pede e valida e-mail (tipo 1 = cadastro)
+        senhaUser = validacao_info.validacaoSenha() #Pede e valida senha
+        nascUser  = validacao_info.validacaoNascimento() #Pede e valida data de nascimento
+        cpfUser   = validacao_info.validacaoCPF() #Pede e valida CPF
 
-        emailUser = validacao_info.validacaoEmail(1)
-        senhaUser = validacao_info.validacaoSenha()
-        nascUser  = validacao_info.validacaoNascimento()
-        cpfUser   = validacao_info.validacaoCPF()
-
-        dataCad   = datetime.now(pytz.timezone('America/Sao_Paulo'))
+        dataCad   = datetime.now(pytz.timezone('America/Sao_Paulo')) #Hora e data do cadastro
 
         new_user = pd.DataFrame({'Nome':[nomeUser],
         'E-mail':[emailUser],
@@ -345,37 +340,38 @@ class sistemaLoja:
         'CPF': [cpfUser],
         'Data Cadastro': [dataCad],
         'Último Login': ['']})
-        
-        if sistemaLoja.telaConfirmacao() == 1:
-            if acesso_db.cadastrarUser(new_user):
+        # Cria um dataframe com todas as informações do usuário
+
+        if sistemaLoja.telaConfirmacao() == 1: #CONFIRMAR ou CANCELAR
+            if acesso_db.cadastrarUser(new_user): #Cadastras usuário
                 print('''
 ---> Cadastro realizado com sucesso.
                 
                 ''')
-                sistemaLoja.telaInicial(self) 
+                sistemaLoja.telaInicial(self) #Retorna a tela inicial
         else:
             print('''
                    -x- Operação Cancelada -x-
                   Retornando a tela inicial...
                 ''')
-            sistemaLoja.telaInicial(self)
+            sistemaLoja.telaInicial(self) #Retorna a tela inicial
  
-    def telaLogin(self):
+    def telaLogin(self): #Tela de Login
         # Tela de Login
         print('''
         -------------- ENTRADA DE USUÁRIO -------------
         ''')
 
-        self.emailLogin   = validacao_info.validacaoEmail(2)
+        self.emailLogin   = validacao_info.validacaoEmail(2) #Pergunta e valida e-mail (tipo 2 = login)
         senhaLogin        = str(input('INSIRA SUA SENHA: ')) 
 
-        if sistemaLoja.telaConfirmacao() == 1:
-                match acesso_db.validarLogin(self, self.emailLogin, senhaLogin):
+        if sistemaLoja.telaConfirmacao() == 1: #CONFIRMAR ou CANCELAR
+                match acesso_db.validarLogin(self, self.emailLogin, senhaLogin): #Valida login
                     case (0) | (1): #0 = E-mail não encontrado | 1 = Senha incorreta
                         print('''
 ---> O e-mail ou senha inserido não está correto.
         Por favor, tente novamente''')
-                        sistemaLoja.telaLogin(self)
+                        sistemaLoja.telaLogin(self) #Retorna à tela inicial
 
                     case 2: #Validação com sucesso
                         print('''
@@ -384,16 +380,16 @@ class sistemaLoja:
                 Seja bem-vindo, ''', self.nomeUserLogin,'''!
                 ''')
                         
-                        acesso_db.registrarLogin(self, self.emailLogin)
-                        sistemaLoja.telaVenda(self)
+                        acesso_db.registrarLogin(self, self.emailLogin) #Regista data e hora do último login
+                        sistemaLoja.telaVenda(self) #Redireciona à tela de venda
         else:
             print('''
                    -x- Operação Cancelada -x-
                   Retornando a tela inicial...
                 ''')
-            sistemaLoja.telaInicial(self)
+            sistemaLoja.telaInicial(self) #Retorna à tela inicial
 
-    def menuVenda(self):
+    def menuVenda(self): #Menu de produtos para tela de venda
         print('''
         ===x===x===x===x===x===x===x===x===x===x===x===
               A LOJA DO PROGRAMADOR - ANHANGUERA
@@ -420,8 +416,8 @@ R$ {1}                R$ {3}                 R$ {5}
              acesso_db_produto.visualizarValor(self, 2)    #5
              ))
 
-    def telaVenda(self):
-        sistemaLoja.menuVenda(self)
+    def telaVenda(self): #Tela de Venda
+        sistemaLoja.menuVenda(self) #Exibe menu de produtos
 
         processo_compra = False
         retorno_inicio = False
@@ -434,8 +430,10 @@ R$ {1}                R$ {3}                 R$ {5}
                         print('''
     Ao prosseguir, você será desconectado de sua conta e redirecionado a tela inicial
         ''')
-                        if sistemaLoja.telaConfirmacao() == 1:
+                        if sistemaLoja.telaConfirmacao() == 1: #CONFIRMAR ou CANCELAR
                             retorno_inicio = True
+                            #Determina True para retorno e dá break, para que seja redirecionado
+                            #por fora, para impedir loop infinito 
                             break
                         else:
                             print('''
@@ -448,13 +446,15 @@ R$ {1}                R$ {3}                 R$ {5}
 
                         if sistemaLoja.telaConfirmacao():
                             processo_compra = True
+                            #Determina True para processo de compra e dá break, para que seja redirecionado
+                            #por fora, para impedir loop infinito
                             break 
                         else:
                             print('''
         Tudo bem! Você será redirecionado à loja.
                             ''')
 
-                            sistemaLoja.menuVenda(self)                            
+                            sistemaLoja.menuVenda(self) #Volta a executar o menu
                     case _:
                         raise
 
@@ -462,7 +462,7 @@ R$ {1}                R$ {3}                 R$ {5}
                 print('Opção incorreta. Insira um número referente a uma das opções disponíveis.')
 
         if retorno_inicio:
-            sistemaLoja.telaInicial(self)
+            sistemaLoja.telaInicial(self) #Caso cancelado, retorna ao inicio
 
         if processo_compra:
             print('''
@@ -477,19 +477,18 @@ R$ {1}                R$ {3}                 R$ {5}
                         case 0:
                             break
                         case 1:
-                            produto_db_atualizado = acesso_db_produto.comprarProduto(self, respVenda-1)
-                            acesso_db_produto.atualizarEstoque(self, produto_db_atualizado)
-                            sistemaLoja.telaAgradecimento(self)
-                            time.sleep(5)
+                            acesso_db_produto.comprarProduto(self, respVenda-1) #Atualiza os bancos de dados
+                            sistemaLoja.telaAgradecimento(self) #Chama a tela de agradecimento
+                            time.sleep(5) #Pausa o programa por 5 segundos
                             break
                         case _:
                             raise
                 except:
                     print('Opção incorreta. Insira um número referente a uma das opções disponíveis.')
 
-            sistemaLoja.telaVenda(self)
+            sistemaLoja.telaVenda(self) #Retorna à tela de venda
 
-    def telaAgradecimento(self):
+    def telaAgradecimento(): #Tela de agradecimento pós compra
         print('''
         
         Obrigado por comprar conosco, tenha um ótimo dia :)
