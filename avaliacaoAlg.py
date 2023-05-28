@@ -1,6 +1,10 @@
-import pandas as pd
-import os
-import re
+import pandas as pd #Lidar com .csv
+import os #Verificar a existência dos .csv
+import re #Regex -> validar e-mail
+import time #Usado para segurar o código por alguns segundos
+from datetime import datetime #Usado para pegar a data/hora atual
+import pytz #Usado para pegar a data/hora no horário de São Paulo
+import uuid #Gera um ID aleatório para as vendas
 
 class acesso_db:
     def existencia_db():
@@ -45,34 +49,45 @@ class acesso_db:
                     return False #Este e-mail já está cadastrado
         return True #Este e-email não está cadastrado
 
+    def registrarLogin(self, email_login):
+        user_db = pd.read_csv('./user_db.csv', sep = ';') #Lê a base de dados existente
+        os.remove('./user_db.csv') #Apaga base de dados já existente no diretório
+
+        for email in user_db.loc[:,"E-mail"]:
+            index = int(''.join(filter(str.isdigit, str(user_db.index[user_db['E-mail']==email_login].tolist()))))
+
+        dataLogin   = datetime.now(pytz.timezone('America/Sao_Paulo'))
+        user_db.loc[index, ['Último Login']] = dataLogin
+
+        user_db.to_csv('./user_db.csv', mode='a', index=False, header=True, sep=';')
+
 class acesso_db_produto:
     def existencia_db_loja():
         if (os.path.isfile('./product_db.csv')) is True:
-            return True
+            return True #Já existe o banco de dados
         else:
-            return False
+            return False #Não existe o banco de dados
 
     def acessar_db(self):
         if acesso_db_produto.existencia_db_loja(): 
             product_db = pd.read_csv('./product_db.csv', sep = ';')
         else:
-            product_db = pd.DataFrame({'Produto':['Café Preto', 'Café Expresso', 'Energético'],
-            'Valor':['2,00', '5,00', '8,00'],
+            product_db = pd.DataFrame({'Produto':['Notebook', 'Monitor', 'Teclado'],
+            'Valor':['4000,00', '1200,00', '500,00'],
             'Quantidade': ['27', '53', '42']})
 
         return(product_db)
 
     def visualizarValor(self, ver_valor):
-        match ver_valor:
-            case 0:
-                return '15,00'
-            case 1:
-                return '12,00'
-            case 2:
-                return '20,00'
+        db_produto = acesso_db_produto.acessar_db(self)
+
+        for produto in db_produto.loc[:,"Produto"]:
+            index = int(''.join(filter(str.isdigit, str(db_produto.index[db_produto['Produto']==acesso_db_produto.visualizarProduto(self, ver_valor)].tolist()))))
+            valor_db = str(db_produto.at[index,"Valor"])
+
+            return(valor_db)
 
     def visualizarProduto(self, ver_produto):
-
         db_produto = acesso_db_produto.acessar_db(self)
 
         todos_produto = ''
@@ -89,7 +104,58 @@ class acesso_db_produto:
             case 2:
                 return lista_produto[2]
 
+    def comprarProduto(self, produto_escolhido):
+        db_produto = acesso_db_produto.acessar_db(self)
+
+        for produto in db_produto.loc[:,"Produto"]:
+            index = int(''.join(filter(str.isdigit, str(db_produto.index[db_produto['Produto']==acesso_db_produto.visualizarProduto(self, produto_escolhido)].tolist()))))
+            quantidade_anterior = int(db_produto.at[index,"Quantidade"])
+
+        db_produto.loc[index, ['Quantidade']] = quantidade_anterior-1
+        
+        acesso_db_produto.registrarVenda(self, produto_escolhido)
+
+        return(db_produto)
+
+    def registrarVenda(self, produto_venda):
+        self.id_venda = uuid.uuid1()
+        dataCompra    = datetime.now(pytz.timezone('America/Sao_Paulo'))
+
+        sells_db = pd.DataFrame({'Usuário': [self.emailLogin],
+        'Pedido':[acesso_db_produto.visualizarProduto(self, produto_venda)],
+        'ID':[self.id_venda],
+        'Data Venda': [dataCompra]})
+
+        if (os.path.isfile('./sells_db.csv')) is True: #Já existe o banco de dados
+            sells_db.to_csv('./sells_db.csv', mode='a', index=False, header=False, sep=';') 
+        else: #Não existe o banco de dados
+            sells_db.to_csv('./sells_db.csv', mode='a', index=False, header=True, sep=';') 
+
+    def atualizarEstoque(self, novo_db_produto):
+        if acesso_db_produto.existencia_db_loja():
+            os.remove('./product_db.csv') #Apaga base de dados já existente no diretório
+
+        novo_db_produto.to_csv('./product_db.csv', mode='a', index=False, header=True, sep=';')
+
+        return True
+
 class validacao_info:
+    def validacaoNome():
+        while True:
+            try:
+                nome = str(input('NOME E SOBRENOME: '))
+
+                if nome.strip():
+                    break
+                else:
+                    raise
+            except:
+                print('''
+        É necessário inserir seu nome. Por favor, tente novamente.
+        ''')
+                
+        return(nome)
+
     def validacaoEmail(tipo):
         while True:
             if tipo == 1:      #CADASTRO
@@ -103,8 +169,8 @@ class validacao_info:
                         break
                     else:
                         print('''
-        Este e-mail já está cadastrado. Por favor, tente novamente.
-            ''')
+        Houve algum problema. Tente novamente.
+            ''') #E-mail já cadastrado
                 elif tipo == 2: #LOGIN
                     break
             else:
@@ -114,40 +180,107 @@ class validacao_info:
                 
         return(emailtestador)
 
-    def validacaoCFF(self, numeros):
-        cpf_separado = [int(char) for char in numeros if char.isdigit()]
+    def validacaoCPF():
+        while True:
+            cpf = input('CPF: ')
 
-        if len(cpf_separado) == 11:
-            if cpf_separado != cpf_separado[::-1]:
+            cpf_separado = [int(char) for char in cpf if char.isdigit()]
+
+            if (len(cpf_separado) == 11) and (cpf_separado != cpf_separado[::-1]):
                 for i in range(9, 11):
                     value = sum((cpf_separado[num] * ((i+1) - num) for num in range(0, i)))
                     digit = ((value * 10) % 11) % 10
                     if digit == cpf_separado[i]:
-                        self.cpf = ''.join([str(numero) for numero in cpf_separado])
-                        return True
-        
-        return False
+                        cpf_numeros = ''.join([str(numero) for numero in cpf_separado])
+                        cpf_valido = True
+                    else:
+                        cpf_valido = False
+            else:
+                cpf_valido = False
 
-    def perguntarCPF(self):
-        while True:
-            cpf = input('CPF: ')
-
-            if validacao_info.validacaoCFF(self, cpf):
+            if cpf_valido:
                 break
             else:
                 print('''
         A informação inserida não se refere a um CPF válido. Por favor, tente novamente.
         ''')
     
-        return(cpf)
+        return(cpf_numeros)
         
-class sistemaLoja:
+    def validacaoNascimento():
+        while True:
+            nascimento = str(input('DATA DE NASCIMENTO (dd/mm/aaaa): '))
 
+            try:
+                dataSep = datetime.strptime(nascimento, "%d/%m/%Y")
+                break
+            except:
+                print('''
+                ---> Houve algum erro ao cadastrar sua data de nascimento.
+    Por favor, escreva no formato dd/mm/aaaa
+    (separado por '/' -> Exemplo: 01/02/2000)
+    ''')
+                
+        return(dataSep)
+
+    def validacaoSenha():
+
+        while True:
+            l, u, p, d = 0, 0, 0, 0
+
+            senha = str(input('''
+            DIGITE SUA SENHA 
+(REQUISITOS: mín. de : 8 caracteres / 1 maiúscula / 1 minúscula / 1 digito / 1 caractere especial): '''))
+
+            try:
+                if (len(senha) >= 8):
+                    for i in senha:
+                
+                        # counting lowercase alphabets
+                        if (i.islower()):
+                            l+=1  
+                        # counting uppercase alphabets
+                        if (i.isupper()):
+                            u+=1           
+                        # counting digits
+                        if (i.isdigit()):
+                            d+=1           
+                        # counting the mentioned special characters
+                        if(i=='@'or i=='$' or i=='_'):
+                            p+=1
+
+                if (l>=1 and u>=1 and p>=1 and d>=1 and l+p+u+d==len(senha)):
+                    break
+                else:
+                    raise
+            except:
+                print('''
+                
+        A senha digitada não contempla um dos requisitos mínimos. Por favor, tente novamente.
+''')
+                
+        while True:
+            try:
+                senha_repete = str(input('''
+DIGITE SUA SENHA NOVAMENTE: '''))
+
+                if senha == senha_repete:
+                    break
+                else:
+                    raise
+            except:
+                print('''
+    ---> A senha inserida não confere com a digitada anteriormente. Por favor, tente novamente.''')
+                
+        return(senha)
+
+class sistemaLoja:
     def __init__(self):
         # Inicialização
         sistemaLoja.telaInicial(self)
 
     def telaInicial(self):
+
         # Tela inicial
         print('''
         ===x===x===x=== LOJA ANHANGUERA ===x===x===x===
@@ -157,26 +290,22 @@ class sistemaLoja:
         [1] Entrar                       [2] Cadastre-se
                                          [0] Encerrar''')
         
-
         while True:
             try:
                 resp = int(input())
                 match resp:
                     case 0:
-                        self.detBreak = True #Usado para finalizar loop infinito
                         break
                     case 1:
                         sistemaLoja.telaLogin(self)
+                        break
                     case 2:
                         sistemaLoja.telaCadastro(self)
-                    case _:                      
+                        break
+                    case _:
                         raise
-                
-                break
             except:
                 print('Opção incorreta. Insira um número referente a uma das opções disponíveis.')
-
-
 
     def telaConfirmacao():
         # Tela de confirmação para ser usada e reciclada por todo o código
@@ -200,18 +329,22 @@ class sistemaLoja:
         -------------- CADASTRO DE USUÁRIO ------------
         ''')
 
-        nomeUser    = str(input('NOME E SOBRENOME: '))
-        emailUser   = validacao_info.validacaoEmail(1)
-        senhaUser   = str(input('CRIE UMA SENHA: ')) 
-        nascUser    = input('DATA DE NASCIMENTO: ') # Alguma forma de armazenar data?
-        
-        cpfUser     = validacao_info.perguntarCPF(self)
+        nomeUser = validacao_info.validacaoNome()
+
+        emailUser = validacao_info.validacaoEmail(1)
+        senhaUser = validacao_info.validacaoSenha()
+        nascUser  = validacao_info.validacaoNascimento()
+        cpfUser   = validacao_info.validacaoCPF()
+
+        dataCad   = datetime.now(pytz.timezone('America/Sao_Paulo'))
 
         new_user = pd.DataFrame({'Nome':[nomeUser],
         'E-mail':[emailUser],
         'Senha': [senhaUser],
         'Nascimento': [nascUser],
-        'CPF': [cpfUser]})
+        'CPF': [cpfUser],
+        'Data Cadastro': [dataCad],
+        'Último Login': ['']})
         
         if sistemaLoja.telaConfirmacao() == 1:
             if acesso_db.cadastrarUser(new_user):
@@ -233,11 +366,11 @@ class sistemaLoja:
         -------------- ENTRADA DE USUÁRIO -------------
         ''')
 
-        emailLogin   = validacao_info.validacaoEmail(2)
-        senhaLogin   = str(input('INSIRA SUA SENHA: ')) 
+        self.emailLogin   = validacao_info.validacaoEmail(2)
+        senhaLogin        = str(input('INSIRA SUA SENHA: ')) 
 
         if sistemaLoja.telaConfirmacao() == 1:
-                match acesso_db.validarLogin(self, emailLogin, senhaLogin):
+                match acesso_db.validarLogin(self, self.emailLogin, senhaLogin):
                     case (0) | (1): #0 = E-mail não encontrado | 1 = Senha incorreta
                         print('''
 ---> O e-mail ou senha inserido não está correto.
@@ -251,6 +384,7 @@ class sistemaLoja:
                 Seja bem-vindo, ''', self.nomeUserLogin,'''!
                 ''')
                         
+                        acesso_db.registrarLogin(self, self.emailLogin)
                         sistemaLoja.telaVenda(self)
         else:
             print('''
@@ -259,8 +393,7 @@ class sistemaLoja:
                 ''')
             sistemaLoja.telaInicial(self)
 
-    def telaVenda(self):
-
+    def menuVenda(self):
         print('''
         ===x===x===x===x===x===x===x===x===x===x===x===
               A LOJA DO PROGRAMADOR - ANHANGUERA
@@ -273,7 +406,7 @@ class sistemaLoja:
 |               |      |               |      |               |
 |               |      |               |      |               |
 ----------------|      ----------------|      ----------------|
-R$ {1}               R$ {3}               R$ {5}
+R$ {1}                R$ {3}                 R$ {5}
 
 
     Escolha uma opção:
@@ -286,8 +419,13 @@ R$ {1}               R$ {3}               R$ {5}
              acesso_db_produto.visualizarProduto(self, 2), #4
              acesso_db_produto.visualizarValor(self, 2)    #5
              ))
-        
 
+    def telaVenda(self):
+        sistemaLoja.menuVenda(self)
+
+        processo_compra = False
+        retorno_inicio = False
+       
         while True:
             try:
                 respVenda = int(input())
@@ -297,37 +435,71 @@ R$ {1}               R$ {3}               R$ {5}
     Ao prosseguir, você será desconectado de sua conta e redirecionado a tela inicial
         ''')
                         if sistemaLoja.telaConfirmacao() == 1:
-                            sistemaLoja.telaInicial(self)
-
-                            if self.detBreak: #Previne loop infinito
-                                break
+                            retorno_inicio = True
+                            break
                         else:
                             print('''
         Perfeito! Adoramos sua presença aqui :)
         
-        ''')
-                            
-                            sistemaLoja.telaVenda(self)
-                    case 1: #Comprar café preto
-                        print('comprado café preto')
-                        break
-                    case 2: #Comprar café expresso
-                        print('comprado café expresso')
-                        break
-                    case 3: #Comprar Energético
-                        print('comprado energético')
-                        break
+        ''') 
+                            sistemaLoja.menuVenda(self)
+                    case (1) | (2) | (3):
+                        print('------> Você deseja comprar: {0}?'.format(acesso_db_produto.visualizarProduto(self, respVenda-1)))
+
+                        if sistemaLoja.telaConfirmacao():
+                            processo_compra = True
+                            break 
+                        else:
+                            print('''
+        Tudo bem! Você será redirecionado à loja.
+                            ''')
+
+                            sistemaLoja.menuVenda(self)                            
                     case _:
                         raise
-                
+
             except:
                 print('Opção incorreta. Insira um número referente a uma das opções disponíveis.')
 
+        if retorno_inicio:
+            sistemaLoja.telaInicial(self)
 
+        if processo_compra:
+            print('''
+        Qual a forma de pagamento?
+        [1] Boleto                       [0] Cancelar
+        ''')
 
+            while True:
+                try:
+                    respPagamento = int(input())
+                    match respPagamento:
+                        case 0:
+                            break
+                        case 1:
+                            produto_db_atualizado = acesso_db_produto.comprarProduto(self, respVenda-1)
+                            acesso_db_produto.atualizarEstoque(self, produto_db_atualizado)
+                            sistemaLoja.telaAgradecimento(self)
+                            time.sleep(5)
+                            break
+                        case _:
+                            raise
+                except:
+                    print('Opção incorreta. Insira um número referente a uma das opções disponíveis.')
 
+            sistemaLoja.telaVenda(self)
 
+    def telaAgradecimento(self):
+        print('''
+        
+        Obrigado por comprar conosco, tenha um ótimo dia :)
+        O boleto de seu pedido já foi enviado ao e-mail cadastrado
 
+                >>> Volte sempre! <<<
+
+    ---> Você será redirecionado para à loja...
+
+        ''')
 
 if __name__ == "__main__":
     # Este IF serve para que o código seja executado
