@@ -1,3 +1,23 @@
+# |=================================================================|
+# |                     AVALIAÇÃO PARCIAL 02                        |
+# |                                                                 |
+# |       UNIVERSIDADE UNOPAR PITÁGORAS ANHANGUERA - CATUAÍ         |
+# |         3º SEMESTRE DE ENGENHARIA DA COMPUTAÇÃO - N             |
+# |                                                                 |
+# |                   DISCIPLINA DE ALGORITMOS E ESTRUTURA DE DADOS |
+# |                              DOCENTE: PROFESSOR SANDRO T. PINTO |
+# |                                                                 |
+# | DISCENTES PARTICIPANTES DESTE TRABALHO AVALIATIVO:              |
+# | - MARCOS GABRIEL GEVIGIER                                       |
+# | - CARLOS EDUARDO ALVES RICO                                     |
+# | - JOÃO VITOR BOAVENRURA AMÂNCIO                                 |
+# | - FILIPE ESTEVÃO GOMES DOS SANTOS                               |
+# | - DANIEL CARLOS DA SILVA                                        |
+# |=================================================================|
+# 
+# ESTE CÓDIGO UTILIZA A BIBLIOTECA PANDAS!
+# PARA INSTALAR, BASTA DIGITAR "pip install pandas" NO TERMINAL PYTHON
+
 import pandas as pd             #Lidar com .csv
 import os                       #Verificar a existência dos .csv
 import re                       #Regex -> validar e-mail
