@@ -152,15 +152,17 @@ class validacao_info: #Classe responsável por verificar se os dados inseridos n
         É necessário inserir seu nome. Por favor, tente novamente.
         ''')
                 
-        return(nome)
+        return(nome.strip())
 
     def validacaoEmail(tipo): #Valida se foi inserido um e-mail (cadastro e login)
         while True:
             if tipo == 1:      #CADASTRO
-                emailtestador   = str(input('INSIRA UM E-MAIL: '))
+                email_input   = str(input('INSIRA UM E-MAIL: '))
             elif tipo == 2:    #LOGIN
-                emailtestador   = str(input('INSIRA SEU E-MAIL: '))
+                email_input   = str(input('INSIRA SEU E-MAIL: '))
             
+            emailtestador = email_input.strip()
+
             if (not re.fullmatch(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", emailtestador)) == False:
                 if tipo == 1: #CADASTRO
                     if acesso_db.verificarCadEmail(emailtestador):
@@ -226,9 +228,11 @@ class validacao_info: #Classe responsável por verificar se os dados inseridos n
         while True:
             l, u, p, d = 0, 0, 0, 0
 
-            senha = str(input('''
-            DIGITE SUA SENHA 
-(REQUISITOS: mín. de : 8 caracteres / 1 maiúscula / 1 minúscula / 1 número / 1 caractere especial): '''))
+            senha_input = str(input('''
+DIGITE SUA SENHA 
+(REQUISITOS: mín. de: 8 caracteres / 1 maiúscula / 1 minúscula / 1 número / 1 caractere especial): '''))
+            
+            senha = senha_input.strip()
 
             try:
                 if (len(senha) >= 8):
@@ -262,7 +266,7 @@ class validacao_info: #Classe responsável por verificar se os dados inseridos n
                 senha_repete = str(input('''
 DIGITE SUA SENHA NOVAMENTE: '''))
 
-                if senha == senha_repete:
+                if senha == senha_repete.strip():
                     break #A senha foi inserida corretamente
                 else:
                     raise #A senha inserida não é igual a anterior
@@ -326,7 +330,7 @@ class sistemaLoja: #Classe principal que executa todo o programa com suas telas
         -------------- CADASTRO DE USUÁRIO ------------
         ''')
 
-        nomeUser = validacao_info.validacaoNome() #Pede e valida nome
+        nomeUser  = validacao_info.validacaoNome() #Pede e valida nome
         emailUser = validacao_info.validacaoEmail(1) #Pede e valida e-mail (tipo 1 = cadastro)
         senhaUser = validacao_info.validacaoSenha() #Pede e valida senha
         nascUser  = validacao_info.validacaoNascimento() #Pede e valida data de nascimento
