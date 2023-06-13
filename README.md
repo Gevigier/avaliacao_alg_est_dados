@@ -1,4 +1,4 @@
-# avaliacao_alg_est_dados
+# Avaliação de "Algoritmos e Estrutura de Dados" - Eng. da Computação, 3º semestre.
  Este repositório contém os códigos/algoritmos desenvolvidos para a Avaliação Oficial 02 da disciplina de Algortimos e Estrutura de Dados, ministrada pelo professor Sandro T. Pinto na Unopar Pitágoras Anhanguera - Catuaí Londrina, PR, Brasil.
 
  Todos os alunos participantes desta avaliação eram, no período da mesma, estudantes de terceiro semestre do curso de Bacharel em Engenharia da Computação.
